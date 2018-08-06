@@ -40,6 +40,7 @@ class App extends Component {
         center: new window.google.maps.LatLng(23.127415,113.256097),
         styles: mapCustomStyle
       });
+      this.setState({map:initMap});
       const {locations, query, map} = this.state;
       let showingLocations=locations
       if (query){
@@ -101,7 +102,6 @@ class App extends Component {
         markers.forEach((m)=>
           bounds.extend(m.position))
         initMap.fitBounds(bounds)
-        this.setState({map:initMap});
       })
     }
     else {
@@ -110,80 +110,15 @@ class App extends Component {
     }
   }
 
-  /**componentDidUpdate(){
-    const {locations, query,map} = this.state;
-    let showingLocations=locations
-    if (query){
-      const match = new RegExp(escapeRegExp(query),'i')
-      showingLocations = locations.filter((location)=> match.test(location.title))
-    }
-    else{
-      showingLocations=locations
-    }
-    markers.forEach(mark => { mark.setMap(null) });
-    markers = [];
-    infoWindows = [];
-    showingLocations.map((marker,index)=> {
-    let getData = this.state.data.filter((single)=>marker.title === single[0][0]).map(item2=>
-      {if (item2.length===0)
-        return 'No Contents Have Been Found Try to Search Manual'
-        else if (item2[1] !=='')
-          return item2[1]
-        else
-          return 'No Contents Have Been Found Try to Search Manual'
-      })
-    let getLink = this.state.data.filter((single)=>marker.title === single[0][0]).map(item2=>
-      {if (item2.length===0)
-        return 'https://www.wikipedia.org'
-        else if (item2[1] !=='')
-          return item2[2]
-        else
-          return 'https://www.wikipedia.org'
-      })
-    let content =
-    `<div tabIndex="0" class="infoWindow">
-    <h4>${marker.title}</h4>
-    <p>${getData}</p>
-    <a href=${getLink}>Click Here For More Info</a>
-
-    </div>`
-      let addInfoWindow= new window.google.maps.InfoWindow({
-        content: content,
-      });
-      let bounds = new window.google.maps.LatLngBounds();
-      let addmarker = new window.google.maps.Marker({
-        map: map,
-        position: marker.location,
-        animation: window.google.maps.Animation.DROP,
-        name : marker.title
-      });
-      markers.push(addmarker);
-      infoWindows.push(addInfoWindow);
-      addmarker.addListener('click', function() {
-          infoWindows.forEach(info => { info.close() });
-          addInfoWindow.open(map, addmarker);
-          if (addmarker.getAnimation() !== null) {
-            addmarker.setAnimation(null);
-          } else {
-            addmarker.setAnimation(window.google.maps.Animation.BOUNCE);
-            setTimeout(() => {addmarker.setAnimation(null);}, 400)
-          }
-        })
-      markers.forEach((m)=>
-        bounds.extend(m.position))
-      map.fitBounds(bounds)
-    })
-  }**/
-
   componentDidMount(){
     this.state.locations.map((location,index)=>{
       return fetchJsonp(`https://en.wikipedia.org/w/api.php?action=opensearch&search=${location.title}&format=json&callback=wikiCallback`)
       .then(response => response.json()).then((responseJson) => {
         let newData = [...this.state.data,[responseJson,responseJson[2][0],responseJson[3][0]]]
         this.updateData(newData)
-      }).catch(error =>
-      console.error(error)
-      )
+      }).catch((err) => {
+      console.log("Error:Can't load the wiki information!")
+      })
     })
   }
 
