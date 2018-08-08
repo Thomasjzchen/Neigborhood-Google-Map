@@ -35,13 +35,22 @@ class App extends Component {
 
   componentWillReceiveProps({isScriptLoadSucceed}){
     if (isScriptLoadSucceed) {
-      const initMap = new window.google.maps.Map(document.getElementById('map'), {
+      const map = new window.google.maps.Map(document.getElementById('map'), {
         zoom: 15,
         center: new window.google.maps.LatLng(23.127415,113.256097),
         styles: mapCustomStyle
       });
-      this.setState({map:initMap});
-      const {locations, query, map} = this.state;
+      this.setState({map:map});
+    }
+    else {
+      console.log("Error:Cann't Load Google Map, please refresh the webpage!");
+      this.setState({requestWasSuccessful: false})
+    }
+  }
+
+  componentDidUpdate({isScriptLoadSucceed}){
+    if (isScriptLoadSucceed) {
+      const {locations, query,map} = this.state;
       let showingLocations=locations
       if (query){
         const match = new RegExp(escapeRegExp(query),'i')
@@ -82,7 +91,7 @@ class App extends Component {
         });
         let bounds = new window.google.maps.LatLngBounds();
         let addmarker = new window.google.maps.Marker({
-          map: initMap,
+          map: map,
           position: marker.location,
           animation: window.google.maps.Animation.DROP,
           name : marker.title
@@ -101,14 +110,13 @@ class App extends Component {
           })
         markers.forEach((m)=>
           bounds.extend(m.position))
-        initMap.fitBounds(bounds)
+        map.fitBounds(bounds)
       })
-    }
-    else {
-      console.log("Error:Cann't Load Google Map!");
-      this.setState({requestWasSuccessful: false})
-    }
   }
+      else {
+        console.log("Error:Google Map is not loaded correctly, please refresh the web page!");
+      }
+}
 
   componentDidMount(){
     this.state.locations.map((location,index)=>{
@@ -117,7 +125,7 @@ class App extends Component {
         let newData = [...this.state.data,[responseJson,responseJson[2][0],responseJson[3][0]]]
         this.updateData(newData)
       }).catch((err) => {
-      console.log("Error:Can't load the wiki information!");
+      console.log("Error:Can't load the wiki information, please refresh the web page!");
       })
     })
   }
